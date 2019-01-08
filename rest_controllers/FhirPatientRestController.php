@@ -9,13 +9,15 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 namespace OpenEMR\RestControllers;
 
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
 use OpenEMR\Services\PatientService;
 use OpenEMR\Services\FhirResourcesService;
 use OpenEMR\RestControllers\RestControllerHelper;
 use HL7\FHIR\STU3\FHIRResource\FHIRBundle\FHIRBundleEntry;
+
+use Particle\Validator\ValidationResult;
 
 class FhirPatientRestController
 {
@@ -29,7 +31,28 @@ class FhirPatientRestController
         $this->fhirService = new FhirResourcesService();
     }
 
-    // implement put post in future
+    /**
+     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient The patient to create
+     * @return \ValidationResponse | \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient
+     */
+    public function post($fhirPatientResource)
+    {
+        $oePatient = $this->fhirService->createOePatientResource($fhirPatientResource);
+        $validationResult = $this->patientService->validate($oePatient);
+        if($validationResult->isNotValid()){
+            return RestControllerHelper::responseHandler($validationResult, null, 400);
+        }
+        $pid = $this->patientService->insert($oePatient);
+
+        if($pid === false){
+            return RestControllerHelper::responseHandler("Couldn't insert patient.", null, 400);
+        }
+
+        $this->patientService->setPid($pid);
+
+        return $this->getOne();
+
+    }
 
     public function getOne()
     {

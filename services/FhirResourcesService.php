@@ -65,7 +65,7 @@ class FhirResourcesService
     public function createPatientResource($pid = '', $data = '', $encode = true)
     {
         // @todo add disply text after meta
-        $nowDate = date("Y-m-d\TH:i:s");
+        $nowDate = date("Y-m-d\\TH:i:s");
         $id = new FhirId();
         $id->setValue($pid);
         $name = new FHIRHumanName();
@@ -83,7 +83,7 @@ class FhirResourcesService
         $gender->setValue(strtolower($data['sex']));
 
         $patientResource = new FHIRPatient($initResource);
-        //$patientResource->setId($id);
+        $patientResource->setId($id);
         $patientResource->setActive(true);
         $patientResource->setGender($gender);
         $patientResource->addName($name);
@@ -165,5 +165,40 @@ class FhirResourcesService
             // @todo xml- not sure yet.
         }
         return $class_object; // feed to resource class or use as is object
+    }
+
+    /**
+     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient
+     * @return array
+     */
+    public function createOePatientResource($fhirPatientResource)
+    {
+        $data = array();
+
+        $fhirName = $fhirPatientResource->getName()[0];
+        $fhirAddress = $fhirPatientResource->getAddress()[0];
+        $fhirContact = $fhirPatientResource->getContact()[0];
+
+        $data["title"] = $this->firstItemValue($fhirName->getPrefix());
+        $data["fname"] = $this->firstItemValue($fhirName->getGiven());
+        $data["mname"] = "";
+        $data["lname"] = $this->firstItemValue($fhirName->getFamily());
+        $data["street"] = $this->firstItemValue($fhirAddress->getLine());
+        $data["postal_code"] = $fhirAddress->getPostalCode()->getValue();
+        $data["city"] = $fhirAddress->getCity()->getValue();
+        $data["state"] = $fhirAddress->getState()->getValue();
+        $data["country_code"] = $fhirAddress->getCountry() ?? "";
+        $data["phone_contact"] = $this->firstItemValue($fhirContact->getTelecom());
+        $data["dob"] = $fhirPatientResource->getBirthDate()->getValue();
+        $data["sex"] = $fhirPatientResource->getGender()->getValue();
+        //TODO: These fields should also be mapped, possibly extensions of PatientResource under FHIR
+        $data["race"] = "";
+        $data["ethnicity"] = "";
+
+        return $data;
+    }
+
+    public function firstItemValue($array, $default = ""){
+        return empty($array) ? $default : $array[0]->getValue();
     }
 }

@@ -177,18 +177,18 @@ class FhirResourcesService
 
         $fhirName = $fhirPatientResource->getName()[0];
         $fhirAddress = $fhirPatientResource->getAddress()[0];
-        $fhirContact = $fhirPatientResource->getContact()[0];
+        $fhirContact = $fhirPatientResource->getTelecom()[0];
 
         $data["title"] = $this->firstItemValue($fhirName->getPrefix());
         $data["fname"] = $this->firstItemValue($fhirName->getGiven());
         $data["mname"] = "";
-        $data["lname"] = $this->firstItemValue($fhirName->getFamily());
+        $data["lname"] = $fhirName->getFamily()->getValue() ?? "";
         $data["street"] = $this->firstItemValue($fhirAddress->getLine());
         $data["postal_code"] = $fhirAddress->getPostalCode()->getValue();
         $data["city"] = $fhirAddress->getCity()->getValue();
         $data["state"] = $fhirAddress->getState()->getValue();
         $data["country_code"] = $fhirAddress->getCountry() ?? "";
-        $data["phone_contact"] = $this->firstItemValue($fhirContact->getTelecom());
+        $data["phone_contact"] = $fhirContact->getValue()->getValue() ?? "";
         $data["dob"] = $fhirPatientResource->getBirthDate()->getValue();
         $data["sex"] = $fhirPatientResource->getGender()->getValue();
         //TODO: These fields should also be mapped, possibly extensions of PatientResource under FHIR

@@ -23,7 +23,7 @@ use OpenEMR\RestControllers\FhirPatientRestController;
  */
 class FHIRPatientControllerTest extends PHPUnit_Framework_TestCase
 {
-    var $patientRequest = "{\"name\":[{\"use\":\"official\",\"given\":[\"TJ\"]}],\"telecom\":[{\"value\":\"(857) 285-0000\",\"system\":\"phone\"}],\"gender\":\"male\",\"birthDate\":\"1984-10-04\",\"address\":[{\"line\":[\"30 Bowdoin St\",\"10\"],\"city\":\"Boston\",\"state\":\"MA\",\"postalCode\":\"02114\"}],\"contact\":[{\"relationship\":[{\"coding\":[{\"system\":\"http://hl7.org/fhir/v2/0131\",\"code\":\"C\",\"display\":\"Emergency Contact\"}],\"text\":\"Aunt\"}],\"name\":{\"use\":\"official\",\"given\":[\"ndkdk\"]},\"telecom\":[{\"value\":\"(123) 456-7890\",\"system\":\"phone\"}],\"gender\":\"female\"}],\"resourceType\":\"Patient\"}";
+
     var $parser = null;
     function __construct($name = null, array $data = [], $dataName = '')
     {
@@ -31,14 +31,21 @@ class FHIRPatientControllerTest extends PHPUnit_Framework_TestCase
         $this->parser = new PHPFHIRResponseParser();
     }
 
-    function testPost(){
+    function testPost() {
         $cut = new FhirPatientRestController(null);
-        $fhirPatient = $this->parser->parse($this->patientRequest);
+        $patientRequest = $this->loadPatientFromResources("1");
+        $fhirPatient = $this->parser->parse($patientRequest);
         $result = $cut->post($fhirPatient);
     }
 
     function testGetAll(){
         $cut = new FhirPatientRestController(null);
         $result = $cut->getAll(array("name"=>"", "birthdate"=>""));
+    }
+
+    function loadPatientFromResources($patient){
+        $result = file_get_contents(__DIR__."/resources/patient_".$patient.".json");
+        //$result = json_decode($result, false);
+        return $result;
     }
 }

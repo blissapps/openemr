@@ -7,7 +7,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__.'/../../../');
 require_once("library/sql.inc");
 
 $site_id = "default";
-require 'phpfhir/vendor/autoload.php';
+require_once 'phpfhir/vendor/autoload.php';
 require_once "sites/$site_id/sqlconf.php";
 require_once '_rest_config.php';
 use HL7\FHIR\STU3\PHPFHIRResponseParser;
@@ -31,9 +31,16 @@ class FHIRPatientControllerTest extends PHPUnit_Framework_TestCase
         $this->parser = new PHPFHIRResponseParser();
     }
 
-    function testPost() {
+    function testPostSuccess() {
         $cut = new FhirPatientRestController(null);
         $patientRequest = $this->loadPatientFromResources("1");
+        $fhirPatient = $this->parser->parse($patientRequest);
+        $result = $cut->post($fhirPatient);
+    }
+
+    function testPostNoLastName() {
+        $cut = new FhirPatientRestController(null);
+        $patientRequest = $this->loadPatientFromResources("2");
         $fhirPatient = $this->parser->parse($patientRequest);
         $result = $cut->post($fhirPatient);
     }

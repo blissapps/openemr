@@ -13,7 +13,7 @@
 namespace OpenEMR\RestControllers;
 
 use OpenEMR\Services\EncounterService;
-use OpenEMR\Services\FhirResourcesService;
+use OpenEMR\Services\FHIR\OEToFhirResourcesService;
 use OpenEMR\RestControllers\RestControllerHelper;
 use HL7\FHIR\STU3\FHIRResource\FHIRBundle\FHIRBundleEntry;
 
@@ -25,7 +25,7 @@ class FhirEncounterRestController
     public function __construct()
     {
         $this->encounterService = new EncounterService();
-        $this->fhirService = new FhirResourcesService();
+        $this->fhirService = new OEToFhirResourcesService();
     }
 
     // implement put post in future

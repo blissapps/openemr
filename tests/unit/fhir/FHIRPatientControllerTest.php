@@ -13,7 +13,9 @@ require_once '_rest_config.php';
 use HL7\FHIR\STU3\PHPFHIRResponseParser;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
 use HL7\FHIR\STU3\FHIRElement\FHIRHumanName;
+use HL7\FHIR\STU3\FHIRElement\FHIRId;
 use OpenEMR\RestControllers\FhirPatientRestController;
+use OpenEMR\Services\PatientService;
 
 /**
  * Created by PhpStorm.
@@ -36,6 +38,25 @@ class FHIRPatientControllerTest extends PHPUnit_Framework_TestCase
         $patientRequest = $this->loadPatientFromResources("1");
         $fhirPatient = $this->parser->parse($patientRequest);
         $result = $cut->post($fhirPatient);
+    }
+
+    function testPutSuccess() {
+        $cut = new FhirPatientRestController(null);
+        $patientService = new PatientService();
+
+        $results = $patientService->getAll([]);
+        $patient = $results[0];
+
+        $pid = $patient["pid"];
+
+        $id = new FHIRId();
+        $id->setValue($pid);
+
+        $patientRequest = $this->loadPatientFromResources("3");
+        $fhirPatient = $this->parser->parse($patientRequest);
+        $fhirPatient->setId($id);
+
+        $result = $cut->put($fhirPatient);
     }
 
     function testPostNoLastName() {

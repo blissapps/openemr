@@ -322,14 +322,31 @@ RestConfig::$ROUTE_MAP = array(
 
 );
 
+require __DIR__.'/phpfhir/vendor/autoload.php';
+
 use OpenEMR\RestControllers\FhirPatientRestController;
 use OpenEMR\RestControllers\FhirEncounterRestController;
+use OpenEMR\RestControllers\FhirConditionRestController;
+use HL7\FHIR\STU3\PHPFHIRResponseParser;
+
+function parseResource($rjson = '', $scheme = 'json')
+{
+    $parser = new PHPFHIRResponseParser(true);
+    if ($scheme == 'json') {
+        $class_object = $parser->parse($rjson);
+    } else {
+        // @todo xml- not sure yet.
+    }
+    return $class_object; // feed to resource class or use as is object
+}
 
 RestConfig::$FHIR_ROUTE_MAP = array(
+    /* ===== AUTH ===== */
     "POST /fhir/auth" => function () {
         $data = (array)(json_decode(file_get_contents("php://input")));
         return (new AuthRestController())->authenticate($data);
     },
+    /* ===== PATIENT ===== */
     "GET /fhir/Patient" => function () {
         authorization_check("patients", "demo");
         return (new FhirPatientRestController(null))->getAll($_GET);
@@ -338,6 +355,17 @@ RestConfig::$FHIR_ROUTE_MAP = array(
         authorization_check("patients", "demo");
         return (new FhirPatientRestController($pid))->getOne();
     },
+    "POST /fhir/Patient" => function () {
+        authorization_check("patients", "demo");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirPatientRestController(null))->post($data);
+    },
+    "PUT /fhir/Patient/:pid" => function ($pid) {
+        authorization_check("patients", "demo");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirPatientRestController($pid))->put($data);
+    },
+    /* ===== ENCOUNTER ===== */
     "GET /fhir/Encounter" => function () {
         authorization_check("encounters", "auth_a");
         return (new FhirEncounterRestController(null))->getAll($_GET);
@@ -345,5 +373,24 @@ RestConfig::$FHIR_ROUTE_MAP = array(
     "GET /fhir/Encounter/:eid" => function ($eid) {
         authorization_check("encounters", "auth_a");
         return (new FhirEncounterRestController())->getOne($eid);
+    },
+    /* ===== CONDITION ===== */
+    "GET /fhir/Condition/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        return (new FhirConditionRestController())->getOne($pid);
+    },
+    "GET /fhir/Condition" => function () {
+        authorization_check("lists", "default");
+        return (new FhirConditionRestController())->getAll($_GET);
+    },
+    "POST /fhir/Condition" => function () {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirConditionRestController())->post($data);
+    },
+    "PUT /fhir/Condition/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirConditionRestController())->put($data);
     },
 );

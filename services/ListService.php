@@ -54,6 +54,20 @@ class ListService
         return $results;
     }
 
+    public function getByPatientIdAndAndListTypeAndTitleAndBegDateAndEndDate($pid, $list_type, $title, $begdate, $enddate)
+    {
+        $sql = "SELECT * FROM lists WHERE pid=? AND type=? AND title=? AND begdate=? AND enddate=? ORDER BY date DESC";
+
+        $statementResults = sqlStatement($sql, array($pid, $list_type, $title, $begdate, $enddate));
+
+        $results = array();
+        while ($row = sqlFetchArray($statementResults)) {
+            array_push($results, $row);
+        }
+
+        return $results;
+    }
+
     public function getOptionsByListName($list_name)
     {
         $sql = "SELECT * FROM list_options WHERE list_id = ?";
@@ -66,6 +80,13 @@ class ListService
         }
 
         return $results;
+    }
+
+    public function getOneByListTypeAndListId($list_type, $list_id)
+    {
+        $sql = "SELECT * FROM lists WHERE type=? AND id=? ORDER BY date DESC";
+
+        return sqlQuery($sql, array($list_type, $list_id));
     }
 
     public function getOne($pid, $list_type, $list_id)

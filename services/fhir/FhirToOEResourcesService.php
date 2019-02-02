@@ -17,6 +17,7 @@ require_once __DIR__ . "/../../phpfhir/vendor/autoload.php";
 
 use HL7\FHIR\STU3\FHIRDomainResource\FHIREncounter;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPractitioner;
 use HL7\FHIR\STU3\FHIRElement\FHIRAddress;
 use HL7\FHIR\STU3\FHIRElement\FHIRAdministrativeGender;
@@ -63,6 +64,29 @@ class FhirToOEResourcesService
         //TODO: These fields should also be mapped, possibly extensions of PatientResource under FHIR
         $data["race"] = "";
         $data["ethnicity"] = "";
+
+        return $data;
+    }
+
+    /**
+     * @param $fhirConditionResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition
+     * @return array
+     */
+    public function createOeListResourceFromFhirCondition($fhirConditionResource) {
+        $data = array();
+
+        $fhirSubjectId = $fhirConditionResource->getSubject()->getReference()->getValue();
+        $pid = str_ireplace("Patient/","", $fhirSubjectId);
+        $title = $fhirConditionResource->getCode()->getText()->getValue();
+        $date = $fhirConditionResource->getOnsetDateTime()->getValue();
+        $diagnosis = $title;
+
+        $data['pid'] = $pid;
+        $data['type'] = "medical_problem";
+        $data["title"] = $title;
+        $data["begdate"] = $date;
+        $data["enddate"] = $date;
+        $data["diagnosis"] = $diagnosis;
 
         return $data;
     }

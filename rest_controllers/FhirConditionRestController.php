@@ -11,8 +11,9 @@
 
 namespace OpenEMR\RestControllers;
 
-use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition;
 use OpenEMR\Services\PatientService;
+use OpenEMR\Services\ListService;
 use OpenEMR\Services\FHIR\OEToFhirResourcesService;
 use OpenEMR\Services\FHIR\FhirToOEResourcesService;
 use OpenEMR\RestControllers\RestControllerHelper;
@@ -20,46 +21,54 @@ use HL7\FHIR\STU3\FHIRResource\FHIRBundle\FHIRBundleEntry;
 
 use Particle\Validator\ValidationResult;
 
-class FhirPatientRestController
+class FhirConditionRestController
 {
+    private $listService;
     private $patientService;
     private $oeToFhirService;
     private $fhirToOeService;
 
-    public function __construct($pid)
+    public function __construct()
     {
         $this->patientService = new PatientService();
-        $this->patientService->setPid($pid);
+        $this->listService = new ListService();
         $this->oeToFhirService = new OEToFhirResourcesService();
         $this->fhirToOeService = new FhirToOEResourcesService();
     }
 
     /**
-     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient The patient to create
-     * @return \HL7\FHIR\STU3\FHIRDomainResource\FHIROperationOutcome | \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient
+     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition The condition to create
+     * @return \HL7\FHIR\STU3\FHIRDomainResource\FHIROperationOutcome | \HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition
      */
-    public function post($fhirPatientResource)
+    public function post($fhirConditionResource)
     {
         try {
-            $oePatient = $this->fhirToOeService->createOePatientResource($fhirPatientResource);
-            $validationResult = $this->patientService->validate($oePatient);
+            $oeList = $this->fhirToOeService->createOeListResourceFromFhirCondition($fhirConditionResource);
+            $validationResult = $this->listService->validate($oeList);
 
             if ($validationResult->isNotValid()) {
                 $result = $this->oeToFhirService->createOperationOutcomeFromValidationResult($validationResult, false);
                 return RestControllerHelper::responseHandler($result, null, 400);
             }
 
-            $pid = $this->patientService->insert($oePatient);
+            $existingOeList = $this->listService->getByPatientIdAndAndListTypeAndTitleAndBegDateAndEndDate($oeList["pid"],
+                $oeList["type"],
+                $oeList["title"],
+                $oeList["begdate"],
+                $oeList["enddate"]);
 
+            if (count($existingOeList) > 0) {
+                return $this->getOne($existingOeList[0]["id"]);
+            }
 
-            if ($pid === false) {
-                $result = $this->oeToFhirService->createOperationOutcomeFromGeneralError("Couldn't insert patient.", false);
+            $lid = $this->listService->insert($oeList);
+
+            if ($lid === false) {
+                $result = $this->oeToFhirService->createOperationOutcomeFromGeneralError("Couldn't insert condition.", false);
                 return RestControllerHelper::responseHandler($result, null, 500);
             }
 
-            $this->patientService->setPid($pid);
-
-            return $this->getOne();
+            return $this->getOne($lid);
         } catch (Throwable $exception) {
             $result = $this->oeToFhirService->createOperationOutcomeFromException($exception, false);
             return RestControllerHelper::responseHandler($result, null, 500);
@@ -67,45 +76,42 @@ class FhirPatientRestController
     }
 
     /**
-     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient The patient to update
-     * @return \HL7\FHIR\STU3\FHIRDomainResource\FHIROperationOutcome | \HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient
+     * @param $fhirPatientResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition The condition to update
+     * @return \HL7\FHIR\STU3\FHIRDomainResource\FHIROperationOutcome | \HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition
      */
-    public function put($fhirPatientResource)
+    public function put($fhirConditionResource)
     {
         try {
-            $oePatient = $this->fhirToOeService->createOePatientResource($fhirPatientResource);
-            $validationResult = $this->patientService->validate($oePatient);
+            $oeList = $this->fhirToOeService->createOeListResourceFromFhirCondition($fhirConditionResource);
+            $validationResult = $this->listService->validate($oeList);
 
             if ($validationResult->isNotValid()) {
                 $result = $this->oeToFhirService->createOperationOutcomeFromValidationResult($validationResult, false);
                 return RestControllerHelper::responseHandler($result, null, 400);
             }
 
-            $pid = $fhirPatientResource->getId()->getValue();
+            $lid = $fhirConditionResource->getId()->getValue();
 
-            $result = $this->patientService->update($pid, $oePatient);
+            $result = $this->listService->update($lid, $oeList);
 
             if ($result === false) {
-                $result = $this->oeToFhirService->createOperationOutcomeFromGeneralError("Couldn't update patient.", false);
+                $result = $this->oeToFhirService->createOperationOutcomeFromGeneralError("Couldn't update condition.", false);
                 return RestControllerHelper::responseHandler($result, null, 500);
             }
 
-            $this->patientService->setPid($pid);
-
-            return $this->getOne();
+            return $this->getOne($lid);
         } catch (Throwable $exception) {
             $result = $this->oeToFhirService->createOperationOutcomeFromException($exception, false);
             return RestControllerHelper::responseHandler($result, null, 500);
         }
     }
 
-    public function getOne()
+    public function getOne($lid)
     {
-        $oept = $this->patientService->getOne();
-        $pid = $this->patientService->getPid();
-        $patientResource = $this->oeToFhirService->createPatientResource($pid, $oept, false);
+        $oeList = $this->listService->getOneByListTypeAndListId($lid, "medical_problem");
+        $conditionResource = $this->oeToFhirService->createConditionResource($lid, $oeList, false);
 
-        return RestControllerHelper::responseHandler($patientResource, null, 200);
+        return RestControllerHelper::responseHandler($conditionResource, null, 200);
     }
 
     public function getAll($search)
@@ -115,27 +121,23 @@ class FhirPatientRestController
             $resourceURL = strstr($resourceURL, '?', true);
         }
 
-        $searchParam = array(
-            'name' => $search['name'],
-            'fname' => $search['fname'],
-            'lname' => $search['lname'],
-            'dob' => $search['birthdate']);
+        $pid = $search['pid'];
 
-        $searchResult = $this->patientService->getAll($searchParam);
+        $searchResult = $this->listService->getAll($pid, "medical_problem");
         if ($searchResult === false) {
             http_response_code(404);
             exit;
         }
         $entries = array();
-        foreach ($searchResult as $oept) {
-            $entryResource = $this->oeToFhirService->createPatientResource($oept['pid'], $oept, false);
+        foreach ($searchResult as $oeList) {
+            $entryResource = $this->oeToFhirService->createConditionResource($oeList['id'], $oeList, false);
             $entry = array(
-                'fullUrl' => $resourceURL . "/" . $oept['pid'],
+                'fullUrl' => $resourceURL . "/" . $oeList['id'],
                 'resource' => $entryResource
             );
             $entries[] = new FHIRBundleEntry($entry);
         }
-        $searchResult = $this->oeToFhirService->createBundle('Patient', $entries, false);
+        $searchResult = $this->oeToFhirService->createBundle('Condition', $entries, false);
         return RestControllerHelper::responseHandler($searchResult, null, 200);
     }
 }

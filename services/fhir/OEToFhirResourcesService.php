@@ -19,6 +19,7 @@ use HL7\FHIR\STU3\FHIRDomainResource\FHIREncounter;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIROperationOutcome;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPractitioner;
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition;
 use HL7\FHIR\STU3\FHIRElement\FHIRAddress;
 use HL7\FHIR\STU3\FHIRElement\FHIRAdministrativeGender;
 use HL7\FHIR\STU3\FHIRElement\FHIRCodeableConcept;
@@ -79,7 +80,11 @@ class OEToFhirResourcesService
         $initResource = array('id' => $id, 'meta' => $meta);
         $name->setUse('official');
         $name->setFamily($data['lname']);
-        $name->given = [$data['fname'], $data['mname']];
+        $name->given = [];
+        $name->given[] = $data['fname'];
+        if($data['mname'] != null && $data['mname'] != '') {
+            $name->given[] = $data['mname'];
+        }
         $address->addLine($data['street']);
         $address->setCity($data['city']);
         $address->setState($data['state']);
@@ -152,6 +157,20 @@ class OEToFhirResourcesService
         $resource->addReason($reason);
         $resource->status = 'finished';
         $resource->setSubject(['reference' => "Patient/$pid"]);
+
+        if ($encode) {
+            return json_encode($resource);
+        } else {
+            return $resource;
+        }
+    }
+
+    public function createConditionResource($lid = '', $data = '', $encode = true)
+    {
+        $resource = new FHIRCondition();
+        $id = new FhirId();
+        $id->setValue($lid);
+        $resource->setId($id);
 
         if ($encode) {
             return json_encode($resource);

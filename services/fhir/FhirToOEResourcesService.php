@@ -81,12 +81,47 @@ class FhirToOEResourcesService
         $date = $fhirConditionResource->getOnsetDateTime()->getValue();
         $diagnosis = $title;
 
+        error_log("SubjectId: ". $fhirSubjectId, 0);
+        error_log("Pid: ". $pid, 0);
+        error_log("Title: ". $title, 0);
+        error_log("Date: ". $date, 0);
+        error_log("Diagnosis: ". $diagnosis, 0);
+
         $data['pid'] = $pid;
         $data['type'] = "medical_problem";
         $data["title"] = $title;
         $data["begdate"] = $date;
         $data["enddate"] = $date;
         $data["diagnosis"] = $diagnosis;
+
+        return $data;
+    }
+
+    /**
+     * @param $fhirProcedureResource \HL7\FHIR\STU3\FHIRDomainResource\FHIRProcedure
+     * @return array
+     */
+    public function createOeListResourceFromFhirProcedure($fhirProcedureResource) {
+        $data = array();
+
+        $fhirSubjectId = $fhirProcedureResource->getSubject()->getReference()->getValue();
+        $pid = str_ireplace("Patient/","", $fhirSubjectId);
+        $title = $fhirProcedureResource->getCode()->getText()->getValue();
+        $date = $fhirProcedureResource->getPerformedDateTime()->getValue();
+        $procedure = $title;
+
+        error_log("SubjectId: ". $fhirSubjectId, 0);
+        error_log("Pid: ". $pid, 0);
+        error_log("Title: ". $title, 0);
+        error_log("Date: ". $date, 0);
+        error_log("Procedure: ". $procedure, 0);
+
+        $data['pid'] = $pid;
+        $data['type'] = "surgery";
+        $data["title"] = $title;
+        $data["begdate"] = $date;
+        $data["enddate"] = $date;
+        $data["diagnosis"] = $procedure;
 
         return $data;
     }

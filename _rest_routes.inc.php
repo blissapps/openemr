@@ -327,6 +327,7 @@ require __DIR__.'/phpfhir/vendor/autoload.php';
 use OpenEMR\RestControllers\FhirPatientRestController;
 use OpenEMR\RestControllers\FhirEncounterRestController;
 use OpenEMR\RestControllers\FhirConditionRestController;
+use OpenEMR\RestControllers\FhirProcedureRestController;
 use HL7\FHIR\STU3\PHPFHIRResponseParser;
 
 function parseResource($rjson = '', $scheme = 'json')
@@ -392,5 +393,24 @@ RestConfig::$FHIR_ROUTE_MAP = array(
         authorization_check("lists", "default");
         $data = parseResource(file_get_contents("php://input"));
         return (new FhirConditionRestController())->put($data);
+    },
+    /* ===== PROCEDURE ===== */
+    "GET /fhir/Procedure/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        return (new FhirProcedureRestController())->getOne($pid);
+    },
+    "GET /fhir/Procedure" => function () {
+        authorization_check("lists", "default");
+        return (new FhirProcedureRestController())->getAll($_GET);
+    },
+    "POST /fhir/Procedure" => function () {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirProcedureRestController())->post($data);
+    },
+    "PUT /fhir/Procedure/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirProcedureRestController())->put($data);
     },
 );

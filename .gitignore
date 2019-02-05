@@ -18,3 +18,4 @@ ccdaservice/node_modules
 
 # dev editor configs
 /.idea/*
+interface/main/calendar/modules/PostCalendar/pntemplates/compiled

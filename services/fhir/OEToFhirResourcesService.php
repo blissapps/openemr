@@ -22,6 +22,7 @@ use HL7\FHIR\STU3\FHIRDomainResource\FHIRPractitioner;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRProcedure;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRMedicationAdministration;
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRAllergyIntolerance;
 use HL7\FHIR\STU3\FHIRElement\FHIRAddress;
 use HL7\FHIR\STU3\FHIRElement\FHIRAdministrativeGender;
 use HL7\FHIR\STU3\FHIRElement\FHIRCodeableConcept;
@@ -198,6 +199,20 @@ class OEToFhirResourcesService
     public function createMedicationAdministrationResource($lid = '', $data = '', $encode = true)
     {
         $resource = new FHIRMedicationAdministration();
+        $id = new FhirId();
+        $id->setValue($lid);
+        $resource->setId($id);
+
+        if ($encode) {
+            return json_encode($resource);
+        } else {
+            return $resource;
+        }
+    }
+
+    public function createAllergyIntoleranceResource($lid = '', $data = '', $encode = true)
+    {
+        $resource = new FHIRAllergyIntolerance();
         $id = new FhirId();
         $id->setValue($lid);
         $resource->setId($id);

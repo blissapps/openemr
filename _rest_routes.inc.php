@@ -329,6 +329,7 @@ use OpenEMR\RestControllers\FhirEncounterRestController;
 use OpenEMR\RestControllers\FhirConditionRestController;
 use OpenEMR\RestControllers\FhirProcedureRestController;
 use OpenEMR\RestControllers\FhirMedicationAdministrationRestController;
+use OpenEMR\RestControllers\FhirAllergyIntoleranceRestController;
 use HL7\FHIR\STU3\PHPFHIRResponseParser;
 
 function parseResource($rjson = '', $scheme = 'json')
@@ -432,5 +433,24 @@ RestConfig::$FHIR_ROUTE_MAP = array(
         authorization_check("lists", "default");
         $data = parseResource(file_get_contents("php://input"));
         return (new FhirMedicationAdministrationRestController())->put($data);
+    },
+    /* ===== ALLERGY INTOLERANCE ===== */
+    "GET /fhir/AllergyIntolerance/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        return (new FhirAllergyIntoleranceRestController())->getOne($pid);
+    },
+    "GET /fhir/AllergyIntolerance" => function () {
+        authorization_check("lists", "default");
+        return (new FhirAllergyIntoleranceRestController())->getAll($_GET);
+    },
+    "POST /fhir/AllergyIntolerance" => function () {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirAllergyIntoleranceRestController())->post($data);
+    },
+    "PUT /fhir/AllergyIntolerance/:pid" => function ($pid) {
+        authorization_check("lists", "default");
+        $data = parseResource(file_get_contents("php://input"));
+        return (new FhirAllergyIntoleranceRestController())->put($data);
     },
 );

@@ -21,6 +21,7 @@ use HL7\FHIR\STU3\FHIRDomainResource\FHIRPatient;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRPractitioner;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRCondition;
 use HL7\FHIR\STU3\FHIRDomainResource\FHIRProcedure;
+use HL7\FHIR\STU3\FHIRDomainResource\FHIRMedicationAdministration;
 use HL7\FHIR\STU3\FHIRElement\FHIRAddress;
 use HL7\FHIR\STU3\FHIRElement\FHIRAdministrativeGender;
 use HL7\FHIR\STU3\FHIRElement\FHIRCodeableConcept;
@@ -194,6 +195,20 @@ class OEToFhirResourcesService
         }
     }
 
+    public function createMedicationAdministrationResource($lid = '', $data = '', $encode = true)
+    {
+        $resource = new FHIRMedicationAdministration();
+        $id = new FhirId();
+        $id->setValue($lid);
+        $resource->setId($id);
+
+        if ($encode) {
+            return json_encode($resource);
+        } else {
+            return $resource;
+        }
+    }
+
     /**
      * This method translates a ValidationResult object from services' validate methods into FHIROperationOutcome
      * Since this typically means a validation error the severity is error and the issue type is invariant:
@@ -248,7 +263,7 @@ class OEToFhirResourcesService
      * https://www.hl7.org/fhir/valueset-issue-type.html
      * @param string $errorMessage The message to output
      * @param bool $encode Should the returned object be encoded
-     * @returns \HL7\FHIR\STU3\FHIRResource\FHIROperationOutcome | string
+     * @return \HL7\FHIR\STU3\FHIRResource\FHIROperationOutcome | string
      */
     public function createOperationOutcomeFromGeneralError($errorMessage, $encode = true)
     {

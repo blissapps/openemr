@@ -126,6 +126,35 @@ class FhirToOEResourcesService
         return $data;
     }
 
+    /**
+     * @param $fhirMedicationAdministration \HL7\FHIR\STU3\FHIRDomainResource\FHIRMedicationAdministration
+     * @return array
+     */
+    public function createOeListResourceFromFhirMedicationAdministration($fhirMedicationAdministration) {
+        $data = array();
+
+        $fhirSubjectId = $fhirMedicationAdministration->getSubject()->getReference()->getValue();
+        $pid = str_ireplace("Patient/","", $fhirSubjectId);
+        $title = $fhirMedicationAdministration->getMedicationCodeableConcept()->getText()->getValue();
+        $date = $fhirMedicationAdministration->getEffectiveDateTime()->getValue();
+        $procedure = $title;
+
+        error_log("SubjectId: ". $fhirSubjectId, 0);
+        error_log("Pid: ". $pid, 0);
+        error_log("Title: ". $title, 0);
+        error_log("Date: ". $date, 0);
+        error_log("Medication: ". $procedure, 0);
+
+        $data['pid'] = $pid;
+        $data['type'] = "medication";
+        $data["title"] = $title;
+        $data["begdate"] = $date;
+        $data["enddate"] = $date;
+        $data["diagnosis"] = $procedure;
+
+        return $data;
+    }
+
     public function firstItemValue($array, $default = ""){
         return empty($array) ? $default : $array[0]->getValue();
     }

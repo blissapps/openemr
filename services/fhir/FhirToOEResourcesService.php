@@ -162,7 +162,7 @@ class FhirToOEResourcesService
     public function createOeListResourceFromFhirAllergyIntolerance($fhirAllergyIntolerance) {
         $data = array();
 
-        $fhirSubjectId = $fhirAllergyIntolerance->getSubject()->getReference()->getValue();
+        $fhirSubjectId = $fhirAllergyIntolerance->getPatient()->getReference()->getValue();
         $pid = str_ireplace("Patient/","", $fhirSubjectId);
         $title = $fhirAllergyIntolerance->getCode()->getText()->getValue();
         $date = $fhirAllergyIntolerance->getOnsetDateTime()->getValue();

@@ -106,7 +106,8 @@ class ListService
         $sql .= "     title=?,";
         $sql .= "     begdate=?,";
         $sql .= "     enddate=?,";
-        $sql .= "     diagnosis=?";
+        $sql .= "     diagnosis=?,";
+        $sql .= "     comments=?";
 
         return sqlInsert(
             $sql,
@@ -116,7 +117,8 @@ class ListService
                 $data["title"],
                 $data["begdate"],
                 $data["enddate"],
-                $data["diagnosis"]
+                $data["diagnosis"],
+                $data["comments"]
             )
         );
     }
@@ -127,7 +129,8 @@ class ListService
         $sql .= "     title=?,";
         $sql .= "     begdate=?,";
         $sql .= "     enddate=?,";
-        $sql .= "     diagnosis=?";
+        $sql .= "     diagnosis=?,";
+        $sql .= "     comments=?";
         $sql .= " WHERE id=?";
 
         return sqlStatement(
@@ -137,6 +140,7 @@ class ListService
                 $data["begdate"],
                 $data["enddate"],
                 $data["diagnosis"],
+                $data["comments"],
                 $data["id"]
             )
         );

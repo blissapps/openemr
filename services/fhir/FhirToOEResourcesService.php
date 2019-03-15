@@ -79,6 +79,7 @@ class FhirToOEResourcesService
         $pid = str_ireplace("Patient/","", $fhirSubjectId);
         $title = $fhirConditionResource->getCode()->getText()->getValue();
         $date = $fhirConditionResource->getOnsetDateTime()->getValue();
+        $note = $this->firstItemTextValue($fhirConditionResource->getNote(), "");
         $diagnosis = $title;
 
         error_log("SubjectId: ". $fhirSubjectId, 0);
@@ -86,6 +87,7 @@ class FhirToOEResourcesService
         error_log("Title: ". $title, 0);
         error_log("Date: ". $date, 0);
         error_log("Diagnosis: ". $diagnosis, 0);
+        error_log("Note: ". $note, 0);
 
         $data['pid'] = $pid;
         $data['type'] = "medical_problem";
@@ -93,6 +95,7 @@ class FhirToOEResourcesService
         $data["begdate"] = $date;
         $data["enddate"] = $date;
         $data["diagnosis"] = $diagnosis;
+        $data["comments"] = $note;
 
         return $data;
     }
@@ -108,6 +111,7 @@ class FhirToOEResourcesService
         $pid = str_ireplace("Patient/","", $fhirSubjectId);
         $title = $fhirProcedureResource->getCode()->getText()->getValue();
         $date = $fhirProcedureResource->getPerformedDateTime()->getValue();
+        $note = $this->firstItemTextValue($fhirProcedureResource->getNote(), "");
         $procedure = $title;
 
         error_log("SubjectId: ". $fhirSubjectId, 0);
@@ -115,6 +119,7 @@ class FhirToOEResourcesService
         error_log("Title: ". $title, 0);
         error_log("Date: ". $date, 0);
         error_log("Procedure: ". $procedure, 0);
+        error_log("Note: ". $note, 0);
 
         $data['pid'] = $pid;
         $data['type'] = "surgery";
@@ -122,6 +127,7 @@ class FhirToOEResourcesService
         $data["begdate"] = $date;
         $data["enddate"] = $date;
         $data["diagnosis"] = $procedure;
+        $data["comments"] = $note;
 
         return $data;
     }
@@ -137,6 +143,7 @@ class FhirToOEResourcesService
         $pid = str_ireplace("Patient/","", $fhirSubjectId);
         $title = $fhirMedicationAdministration->getMedicationCodeableConcept()->getText()->getValue();
         $date = $fhirMedicationAdministration->getEffectiveDateTime()->getValue();
+        $note = $this->firstItemTextValue($fhirMedicationAdministration->getNote(), "");
         $procedure = $title;
 
         error_log("SubjectId: ". $fhirSubjectId, 0);
@@ -144,6 +151,7 @@ class FhirToOEResourcesService
         error_log("Title: ". $title, 0);
         error_log("Date: ". $date, 0);
         error_log("Medication: ". $procedure, 0);
+        error_log("Note: ". $note, 0);
 
         $data['pid'] = $pid;
         $data['type'] = "medication";
@@ -151,6 +159,7 @@ class FhirToOEResourcesService
         $data["begdate"] = $date;
         $data["enddate"] = $date;
         $data["diagnosis"] = $procedure;
+        $data["comments"] = $note;
 
         return $data;
     }
@@ -166,6 +175,7 @@ class FhirToOEResourcesService
         $pid = str_ireplace("Patient/","", $fhirSubjectId);
         $title = $fhirAllergyIntolerance->getCode()->getText()->getValue();
         $date = $fhirAllergyIntolerance->getOnsetDateTime()->getValue();
+        $note = $this->firstItemTextValue($fhirAllergyIntolerance->getNote(), "");
         $procedure = $title;
 
         error_log("SubjectId: ". $fhirSubjectId, 0);
@@ -173,6 +183,7 @@ class FhirToOEResourcesService
         error_log("Title: ". $title, 0);
         error_log("Date: ". $date, 0);
         error_log("Allergy: ". $procedure, 0);
+        error_log("Note: ". $note, 0);
 
         $data['pid'] = $pid;
         $data['type'] = "allergy";
@@ -180,12 +191,17 @@ class FhirToOEResourcesService
         $data["begdate"] = $date;
         $data["enddate"] = $date;
         $data["diagnosis"] = $procedure;
+        $data["comments"] = $note;
 
         return $data;
     }
 
     public function firstItemValue($array, $default = ""){
         return empty($array) ? $default : $array[0]->getValue();
+    }
+
+    public function firstItemTextValue($array, $default = ""){
+        return empty($array) ? $default : $array[0]->getText()->getValue();
     }
 
     public function itemValue($fhirString, $default = ""){
